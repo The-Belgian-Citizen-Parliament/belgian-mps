@@ -2,12 +2,14 @@ const csv = require('csvtojson');
 const axios = require('axios').default;
 const fs = require('fs');
 
+process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0
+
 function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
 }
 
 async function getData() {
-    const data = await csv({delimiter: ';'}).fromFile('./vlaams_parlement.csv');
+    const data = await csv({delimiter: ';'}).fromFile('./deputes-wallons-08-09-2020.csv');
 
     console.log(data);
 
@@ -17,21 +19,22 @@ async function getData() {
         try {
             const mp = {};
 
-            mp.parliament = 'Vlaams Parlement';
-            mp.firstName = mpInput.voornaam;
-            mp.lastName = mpInput.naam;
-            mp.city = capitalizeFirstLetter(mpInput.gemeente);
-            mp.party = mpInput.fractie;
+            mp.parliament = 'Wallon';
+            mp.firstName = mpInput.firstName;
+            mp.lastName = capitalizeFirstLetter(mpInput.lastName);
+            mp.city = capitalizeFirstLetter(mpInput.city);
+            mp.party = mpInput.party;
             mp.id = mpInput.id;
-            mp.constituency = capitalizeFirstLetter(mpInput.kieskring.replace('Kieskring ', ''));
-            mp.language = 'Nederlands',
+            mp.constituency = capitalizeFirstLetter(mpInput.constituency);
+            mp.language = 'Frans',
             mp.email = mpInput.email;
+            mp.twitter = mpInput.twitter && '@' + mpInput.twitter.replace('https://twitter.com/', '').replace('@', '');
             
-            if (mpInput.fotowebpath) {
+            if (mpInput.picture) {
                 try {
                     mp.localImg = mp.id + '.jpg';
                     const path = 'img/' + mp.localImg;
-                    //await downloadImage(mpInput.fotowebpath, path);
+                    //await downloadImage(mpInput.picture, path);
                 } catch (err) {
                     console.error('Error downloading image', err);
                     mp.localImg = 'anonymous.jpg';
